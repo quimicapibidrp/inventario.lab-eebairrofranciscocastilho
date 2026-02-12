@@ -862,7 +862,7 @@
             container.innerHTML = filtered.map(item => `
                 <label class="staging-item checkbox-item">
                     <input type="checkbox" value="${item.id}" name="deleteItem">
-                    <div class="staging-info">
+                    <div class="staging-info" style="flex: 1; text-align: right;">
                         <h4>${item.nome}</h4>
                         <span>${item.localizacao} • ${item.status}</span>
                     </div>
@@ -1142,3 +1142,4 @@
     </script>
 </body>
 </html>
+
