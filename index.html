@@ -111,6 +111,14 @@
         .btn-config { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--input-bg); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .btn-config:hover { background: var(--primary); color: white; transform: rotate(45deg); }
 
+        /* --- ALERTA POLÍTICA --- */
+        .warning-box {
+            background: #fffbeb; border: 1px solid #fcd34d; color: #92400e;
+            padding: 1rem; border-radius: 12px; margin-bottom: 2rem;
+            display: flex; justify-content: space-between; align-items: start;
+            box-shadow: var(--shadow-sm);
+        }
+
         /* --- CONTROLES --- */
         .dashboard-card { 
             background: var(--surface); border-radius: var(--radius-lg); 
@@ -124,8 +132,7 @@
             padding-bottom: 1.2rem; flex-wrap: wrap; 
         }
         
-        /* CLASSE DE PROTEÇÃO: Esconde se o usuário não for autorizado */
-        .protected { display: none !important; }
+        .admin-only { display: none; }
 
         .btn-link { 
             background: none; border: none; cursor: pointer; 
@@ -184,7 +191,7 @@
         .btn-icon:hover { background: var(--bg-body); color: var(--primary); border-color: var(--border); }
         .btn-icon.delete:hover { background: #fff5f5; color: var(--danger); border-color: #fed7d7; }
 
-        /* --- MODAIS & ESTILOS ORIGINAIS --- */
+        /* --- MODAIS --- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px); justify-content: center; align-items: center; z-index: 1000; }
         .modal.active { display: flex; }
         .modal-content { background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
@@ -192,14 +199,14 @@
         .modal-md { max-width: 500px; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         
-        /* Abas do Menu Original */
+        /* Abas */
         .tabs { display: flex; gap: 0.5rem; background: var(--input-bg); padding: 0.5rem; border-radius: 16px; margin-bottom: 1.5rem; border: 1px solid var(--border); }
         .tab-btn { flex: 1; padding: 0.8rem; border: none; background: transparent; border-radius: 12px; cursor: pointer; font-weight: 600; color: var(--text-light); transition: all 0.2s; }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* Lista Temporária (Staging) */
+        /* Lista Temporária */
         .staging-list { display: flex; flex-direction: column; gap: 0.8rem; margin: 1rem 0; max-height: 400px; overflow-y: auto;}
         .staging-item { background: var(--input-bg); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .staging-info h4 { margin: 0; font-size: 1rem; font-weight: 600; }
@@ -207,7 +214,21 @@
         .form-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
         
         .form-col { display: flex; flex-direction: column; gap: 1rem; }
-        .form-input { padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); width: 100%; }
+        .form-input { padding: 0.8rem; border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg); width: 100%; transition: all 0.2s; }
+        .form-input:focus { border-color: var(--accent); background: var(--surface); outline: none; box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.1); }
+
+        /* --- FERRAMENTAS DE EDIÇÃO DE SELECTS --- */
+        .dynamic-control-group { display: flex; gap: 0.5rem; align-items: center; } 
+        .dynamic-control-group select { flex: 1; border-top-right-radius: 4px; border-bottom-right-radius: 4px; }
+        .tools-wrapper { display: flex; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; }
+        .btn-mini { 
+            width: 30px; height: 30px; background: transparent; border: none; 
+            border-radius: 6px; cursor: pointer; color: var(--text-light); 
+            display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+            transition: all 0.2s; 
+        }
+        .btn-mini:hover { background: #e0f2fe; color: var(--primary); } 
+        .btn-mini.danger:hover { background: #fee2e2; color: var(--danger); }
 
         /* --- PRINT --- */
         @media print {
@@ -219,7 +240,7 @@
             .logo-text { width: 100%; text-align: center; }
             .logo-text h1 { font-size: 14pt !important; white-space: nowrap; color: black !important; margin: 0 !important; display: block; font-weight: bold; text-align: center; }
             .logo-text p { display: none; } 
-            .search-section, .btn-primary, .btn-secondary, .btn-icon, .action-buttons, .modal, .top-actions, .auth-container, #statusMsg { display: none !important; }
+            .search-section, .btn-primary, .btn-secondary, .btn-icon, .action-buttons, .modal, .top-actions, .auth-container, #statusMsg, #policyAlert { display: none !important; }
             .table-wrapper { border: 1px solid #000; box-shadow: none; border-radius: 0; margin-top: 15px; }
             th:last-child, td:last-child { display: none; } 
             table { width: 100%; min-width: 100%; border-collapse: collapse; }
@@ -251,11 +272,27 @@
     </header>
 
     <main class="container">
+        
+        <div id="policyAlert" class="warning-box">
+            <div style="display:flex; gap:1rem; align-items:start;">
+                <span style="font-size:1.5rem;">⚠️</span>
+                <div>
+                    <strong>Política de Quantidade</strong>
+                    <p style="font-size:0.9rem; margin-top:0.2rem;">
+                        Mantenha em estoque apenas a quantidade necessária para o semestre letivo. 
+                        O excesso de reagentes vence e gera resíduos químicos caros para descarte.
+                    </p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('policyAlert').style.display='none'" 
+                    style="background:none; border:none; cursor:pointer; font-size:1.2rem; opacity:0.6;" title="Fechar aviso">✕</button>
+        </div>
+
         <div class="dashboard-card search-section">
             <div class="top-actions">
                 <button class="btn-link" onclick="window.print()">🖨️ Imprimir</button>
-                <button class="btn-link protected" onclick="importData()">📂 Importar</button>
-                <button class="btn-link protected" onclick="exportBackup()">💾 Backup</button>
+                <button id="btnImport" class="btn-link admin-only" onclick="importData()">📂 Importar</button>
+                <button id="btnBackup" class="btn-link admin-only" onclick="exportBackup()">💾 Backup</button>
             </div>
 
             <div class="controls-wrapper">
@@ -267,14 +304,11 @@
                     <div style="min-width: 200px;">
                         <select id="filterType" class="filter-select">
                             <option value="Todos">Todos os Tipos</option>
-                            <option value="Reagente">Reagente</option>
-                            <option value="Vidraria">Vidraria</option>
-                            <option value="Equipamento">Equipamento</option>
                         </select>
                     </div>
                 </div>
                 
-                <button type="button" class="btn-primary protected" onclick="openManagementModal()">
+                <button id="btnEditInventory" type="button" class="btn-primary admin-only" onclick="openManagementModal()">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                     Editar Inventário
                 </button>
@@ -292,7 +326,7 @@
                             <th>Nome</th>
                             <th>Quantidade</th>
                             <th>Status</th>
-                            <th class="protected">Ações</th>
+                            <th id="colActions" class="admin-only">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTable"></tbody>
@@ -354,36 +388,53 @@
                     <label style="font-size:0.8rem; font-weight:700;">Nome do Item</label>
                     <input type="text" id="nome" class="form-input" required>
                 </div>
+                
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
                     <div class="form-col">
                         <label style="font-size:0.8rem; font-weight:700;">Tipo</label>
-                        <select id="tipo" class="form-input">
-                            <option value="Reagente">Reagente</option>
-                            <option value="Vidraria">Vidraria</option>
-                            <option value="Equipamento">Equipamento</option>
-                        </select>
+                        <div class="dynamic-control-group">
+                            <select id="tipo" class="form-input"></select>
+                            <div class="tools-wrapper">
+                                <button type="button" class="btn-mini" onclick="manageOption('type', 'add')" title="Adicionar">+</button>
+                                <button type="button" class="btn-mini" onclick="manageOption('type', 'edit')" title="Editar">✎</button>
+                                <button type="button" class="btn-mini danger" onclick="manageOption('type', 'remove')" title="Remover">✕</button>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div class="form-col">
                         <label style="font-size:0.8rem; font-weight:700;">Localização</label>
-                        <select id="local" class="form-input">
-                            <option value="Armário 1">Armário 1</option>
-                            <option value="Armário 2">Armário 2</option>
-                            <option value="Prateleira A">Prateleira A</option>
-                            <option value="Prateleira B">Prateleira B</option>
-                            <option value="Geladeira">Geladeira</option>
-                        </select>
+                        <div class="dynamic-control-group">
+                            <select id="local" class="form-input"></select>
+                            <div class="tools-wrapper">
+                                <button type="button" class="btn-mini" onclick="manageOption('loc', 'add')" title="Adicionar">+</button>
+                                <button type="button" class="btn-mini" onclick="manageOption('loc', 'edit')" title="Editar">✎</button>
+                                <button type="button" class="btn-mini danger" onclick="manageOption('loc', 'remove')" title="Remover">✕</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <div style="display:flex; gap:1rem;">
                     <div class="form-col" style="flex:1;">
                         <label style="font-size:0.8rem; font-weight:700;">Qtd</label>
                         <input type="number" id="qtd" class="form-input" required>
                     </div>
+                    
                     <div class="form-col" style="flex:1;">
                         <label style="font-size:0.8rem; font-weight:700;">Unidade</label>
-                        <input type="text" id="unidade" class="form-input" placeholder="mL, g, un">
+                        <div class="dynamic-control-group">
+                            <select id="unidade" class="form-input">
+                                </select>
+                            <div class="tools-wrapper">
+                                <button type="button" class="btn-mini" onclick="manageOption('unit', 'add')" title="Adicionar">+</button>
+                                <button type="button" class="btn-mini" onclick="manageOption('unit', 'edit')" title="Editar">✎</button>
+                                <button type="button" class="btn-mini danger" onclick="manageOption('unit', 'remove')" title="Remover">✕</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
                 <div class="form-col">
                     <label style="font-size:0.8rem; font-weight:700;">Status</label>
                     <select id="status" class="form-input">
@@ -436,15 +487,87 @@
         const auth = getAuth(app);
         
         let inventory = [];
-        let userRole = 'visitor';
+        let userRole = 'visitor'; 
         
-        // Estado para o Menu Original (Staging)
         let pendingItems = [];
         let itemsToDelete = [];
-        let currentMode = null; // 'staging_new', 'staging_edit', 'direct_edit'
+        let currentMode = null; 
         let editingIndexOrId = null;
 
-        // AUTH & UI
+        // --- CONFIGURAÇÃO DAS OPÇÕES DINÂMICAS ---
+        let configData = {
+            types: ["Reagente", "Vidraria", "Equipamento"],
+            locations: ["Prateleira A", "Prateleira B", "Geladeira", "Armário 1", "Armário 2"],
+            units: ["mL", "L", "g", "kg", "Unid", "Caixa", "Frasco"]
+        };
+
+        // Carregar configurações locais
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('labConfig');
+            if(saved) configData = JSON.parse(saved);
+            populateAllSelects();
+        });
+
+        function saveConfig() {
+            localStorage.setItem('labConfig', JSON.stringify(configData));
+            populateAllSelects();
+        }
+
+        function populateAllSelects() {
+            const fill = (id, arr) => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                const currentVal = el.value;
+                el.innerHTML = arr.map(op => `<option value="${op}">${op}</option>`).join('');
+                if(arr.includes(currentVal)) el.value = currentVal;
+            }
+            fill('tipo', configData.types);
+            fill('local', configData.locations);
+            fill('unidade', configData.units);
+            
+            // Filtro header
+            const f = document.getElementById('filterType');
+            const currFilter = f.value;
+            f.innerHTML = '<option value="Todos">Todos os Tipos</option>' + configData.types.map(t => `<option value="${t}">${t}</option>`).join('');
+            f.value = currFilter;
+        }
+
+        window.manageOption = function(category, action) {
+            let arr;
+            let elId;
+            
+            if(category === 'type') { arr = configData.types; elId = 'tipo'; }
+            else if(category === 'loc') { arr = configData.locations; elId = 'local'; }
+            else { arr = configData.units; elId = 'unidade'; }
+            
+            const el = document.getElementById(elId);
+
+            if(action === 'add') {
+                const val = prompt("Novo item:");
+                if(val && val.trim()) {
+                    arr.push(val.trim());
+                    saveConfig();
+                    el.value = val.trim();
+                }
+            } else if(action === 'edit') {
+                if(!el.value) return;
+                const val = prompt("Editar:", el.value);
+                if(val && val.trim()) {
+                    const idx = arr.indexOf(el.value);
+                    if(idx !== -1) arr[idx] = val.trim();
+                    saveConfig();
+                }
+            } else {
+                if(!el.value) return;
+                if(confirm("Remover opção?")) {
+                    const idx = arr.indexOf(el.value);
+                    if(idx !== -1) arr.splice(idx, 1);
+                    saveConfig();
+                }
+            }
+        }
+
+        // --- SISTEMA DE LOGIN E PERMISSÃO ---
         onAuthStateChanged(auth, async (user) => {
             const container = document.getElementById('authContainer');
             if (user) {
@@ -454,12 +577,13 @@
                     if (snap.exists()) {
                         userRole = snap.data().role;
                     } else {
-                        if(confirm("Solicitar acesso de Admin?")) {
+                        if(confirm("Deseja solicitar acesso de Admin?")) {
                             await setDoc(userRef, { email: user.email, name: user.displayName, role: 'pending' });
-                            alert("Solicitado."); userRole = 'pending';
-                        }
+                            alert("Solicitado. Aguarde liberação.");
+                            userRole = 'pending';
+                        } else userRole = 'visitor';
                     }
-                } catch(e) { console.error(e); }
+                } catch(e) { console.error(e); userRole = 'visitor'; }
 
                 const adminBtn = userRole === 'super_admin' ? `<button class="btn-config" onclick="openAdmin()">⚙</button>` : '';
                 container.innerHTML = `
@@ -467,7 +591,7 @@
                         <img src="${user.photoURL}" class="avatar">
                         <div class="user-details">
                             <span class="u-name">${user.displayName.split(' ')[0]}</span>
-                            <span class="u-role">${userRole}</span>
+                            <span class="u-role">Status: ${userRole}</span>
                         </div>
                         ${adminBtn}
                         <button class="btn-logout" onclick="logout()">Sair</button>
@@ -476,53 +600,32 @@
                 userRole = 'visitor';
                 container.innerHTML = `
                     <button class="btn-google" onclick="loginGoogle()">
-                        <svg class="google-icon" viewBox="0 0 48 48">
-                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-                        </svg>
+                        <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
                         Entrar com Google
                     </button>`;
             }
-            // Força atualização da UI imediatamente após login
-            updateUI();
-            // Carrega inventário para garantir dados atualizados
+            updateInterface();
             loadInventory();
         });
 
-        // CARGA DE DADOS
+        function updateInterface() {
+            const isAdmin = (userRole === 'admin' || userRole === 'super_admin');
+            document.getElementById('btnImport').style.display = isAdmin ? 'inline-flex' : 'none';
+            document.getElementById('btnBackup').style.display = isAdmin ? 'inline-flex' : 'none';
+            document.getElementById('btnEditInventory').style.display = isAdmin ? 'inline-flex' : 'none';
+            document.getElementById('colActions').style.display = isAdmin ? 'table-cell' : 'none';
+            applyFilters();
+        }
+
         async function loadInventory() {
             try {
                 const q = query(collection(db, "inventario"), orderBy("nome"));
                 const snap = await getDocs(q);
                 inventory = [];
                 snap.forEach(d => inventory.push({ id: d.id, ...d.data() }));
-                applyFilters(); 
+                applyFilters();
                 document.getElementById('statusMsg').innerText = `${inventory.length} itens carregados.`;
             } catch (e) { console.error(e); }
-        }
-
-        // LÓGICA DE UI (CORRIGIDA: REMOVE CLASSE PROTECTED)
-        function updateUI() {
-            const isAdmin = ['admin', 'super_admin'].includes(userRole);
-            const protectedElements = document.querySelectorAll('.protected');
-            
-            protectedElements.forEach(el => {
-                if(isAdmin) {
-                    // Se for admin, remove a classe que esconde o elemento
-                    el.classList.remove('protected');
-                    
-                    // Ajuste fino: Se a classe foi removida de um TH ou TD, o display volta ao padrão do navegador
-                    // Se for botão, volta a ser inline-block/flex
-                } else {
-                    // Se não for admin, garante que a classe exista
-                    el.classList.add('protected');
-                }
-            });
-            
-            // Re-renderiza a tabela para garantir que as colunas de ação apareçam
-            applyFilters();
         }
 
         window.applyFilters = () => {
@@ -538,7 +641,7 @@
 
         function renderTable(list) {
             const tbody = document.getElementById('inventoryTable');
-            const isAdmin = ['admin', 'super_admin'].includes(userRole);
+            const isAdmin = (userRole === 'admin' || userRole === 'super_admin');
             
             if(list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem;">Nada encontrado.</td></tr>`; return; }
 
@@ -547,15 +650,13 @@
                 if((item.status||'').includes('Alto')) badgeClass = 'badge-alto';
                 if((item.status||'').includes('Crít')) badgeClass = 'badge-low';
 
-                // AÇÕES DA TABELA (EDIÇÃO RÁPIDA) - SÓ PARA ADMIN
-                // Note que não usamos a classe protected aqui dentro do HTML gerado, pois o JS já decide se gera ou não
-                const actions = isAdmin ? `
+                const actionCell = isAdmin ? `
                     <td>
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="window.editDirect('${item.id}')" title="Editar">✎</button>
+                            <button class="btn-icon" onclick="window.editDirect('${item.id}')" title="Editar Rápido">✎</button>
                             <button class="btn-icon delete" onclick="window.deleteDirect('${item.id}')" title="Excluir">✕</button>
                         </div>
-                    </td>` : ``; // Se não for admin, não gera a TD
+                    </td>` : ``;
 
                 return `<tr>
                     <td><span class="badge badge-type">${item.tipo}</span></td>
@@ -563,22 +664,22 @@
                     <td><strong>${item.nome}</strong></td>
                     <td>${item.quantidade} <small>${item.unidade}</small></td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    ${actions}
+                    ${actionCell}
                 </tr>`;
             }).join('');
         }
 
-        // --- LÓGICA DO MENU ORIGINAL (ABAS, LOTE, ETC) ---
-        
+        // --- LÓGICA DO MENU LOTE (MODAL) ---
         window.openManagementModal = function() {
             document.getElementById('managementModal').classList.add('active');
             window.switchTab('add');
         }
 
         window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
+            document.getElementById('tab-add').style.display = 'none';
+            document.getElementById('tab-remove').style.display = 'none';
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
             
             const btns = document.querySelectorAll('.tab-btn');
             if(tabName === 'add') btns[0].classList.add('active');
@@ -588,7 +689,6 @@
             }
         }
 
-        // LÓGICA DE STAGING (ADICIONAR)
         window.openStagingItemForm = function() {
             currentMode = 'staging_new';
             openItemFormGeneric();
@@ -607,7 +707,7 @@
         function renderStagingList() {
             const container = document.getElementById('stagingArea');
             if (pendingItems.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 2rem;">A lista de adição está vazia.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 2rem;">Lista vazia.</div>`;
                 return;
             }
             container.innerHTML = pendingItems.map((item, index) => `
@@ -638,16 +738,15 @@
             } catch (e) { alert("Erro: " + e.message); }
         }
 
-        // LÓGICA DE REMOÇÃO (LOTE)
         window.renderDeleteList = function() {
             const term = document.getElementById('deleteSearch').value.toLowerCase();
             const container = document.getElementById('deleteListArea');
-            const filtered = inventory.filter(i => i.nome.toLowerCase().includes(term) || i.localizacao.toLowerCase().includes(term));
+            const filtered = inventory.filter(i => i.nome.toLowerCase().includes(term));
 
             container.innerHTML = filtered.map(item => `
-                <label class="staging-item" style="cursor:pointer">
-                    <input type="checkbox" value="${item.id}" name="deleteItem">
-                    <div class="staging-info" style="flex: 1; margin-left:10px;">
+                <label class="staging-item" style="cursor:pointer; display:flex;">
+                    <input type="checkbox" value="${item.id}" name="deleteItem" style="margin-right:10px;">
+                    <div class="staging-info">
                         <h4>${item.nome}</h4>
                         <span>${item.localizacao}</span>
                     </div>
@@ -668,14 +767,12 @@
             try {
                 await batch.commit();
                 window.closeModal('confirmDeleteModal');
-                window.renderDeleteList();
+                window.closeModal('managementModal');
                 loadInventory();
                 alert("Itens excluídos.");
             } catch (e) { alert("Erro: " + e.message); }
         }
 
-        // --- FORMULÁRIO GENÉRICO E EDIÇÃO DIRETA ---
-        
         window.editDirect = function(id) {
             currentMode = 'direct_edit';
             editingIndexOrId = id;
@@ -684,18 +781,21 @@
         }
 
         window.deleteDirect = async function(id) {
-             if(confirm("Tem certeza que deseja excluir este item individualmente?")) {
-                 await deleteDoc(doc(db, "inventario", id));
-                 loadInventory();
-             }
+            if(confirm("Excluir este item?")) {
+                await deleteDoc(doc(db, "inventario", id));
+                loadInventory();
+            }
         }
 
         function openItemFormGeneric(item = null) {
             document.getElementById('itemForm').reset();
             const title = document.getElementById('modalTitle');
             
-            if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista Temporária";
-            else title.innerText = "Editar Item Existente";
+            if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
+            else title.innerText = "Editar Item";
+            
+            // Garantir que os selects tenham valores (caso estejam vazios)
+            populateAllSelects();
 
             if (item) {
                 document.getElementById('nome').value = item.nome;
@@ -732,12 +832,20 @@
             }
         });
 
-        // --- GLOBAIS ---
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.loginGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
-        window.logout = () => signOut(auth);
+        
+        // LOGOUT FORÇA BRUTA
+        window.logout = async () => {
+            // Limpeza imediata da UI
+            userRole = 'visitor';
+            updateInterface();
+            document.getElementById('authContainer').innerHTML = 'Saindo...';
+            // Logout real
+            await signOut(auth);
+            window.location.reload(); // Recarrega para limpar estado
+        };
 
-        // Admin e Backup (Mesma lógica)
         window.openAdmin = async () => {
             if(userRole !== 'super_admin') return;
             document.getElementById('adminModal').classList.add('active');
@@ -784,7 +892,6 @@
             r.readAsText(f);
         };
 
-        // Event Listeners
         document.getElementById('searchInput').addEventListener('input', applyFilters);
         document.getElementById('filterType').addEventListener('change', applyFilters);
     </script>
