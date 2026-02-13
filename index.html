@@ -737,6 +737,7 @@
             renderStagingList();
         }
 
+        // --- RENDERIZAÇÃO DA LISTA PRÉVIA ATUALIZADA ---
         function renderStagingList() {
             const container = document.getElementById('stagingArea');
             if (pendingItems.length === 0) {
@@ -744,10 +745,11 @@
                 return;
             }
             container.innerHTML = pendingItems.map((item, index) => `
-                <div class="staging-item">
-                    <div class="staging-info">
-                        <h4>${item.nome}</h4>
-                        <span>${item.tipo} • ${item.quantidade} ${item.unidade}</span>
+                <div class="staging-item" style="align-items: center;">
+                    <div class="staging-info" style="flex: 1;">
+                        <h4 style="margin-bottom: 0.2rem;">${item.nome}</h4>
+                        <span style="display: block; font-size: 0.85rem; color: var(--text-light);">${item.tipo} • ${item.quantidade} ${item.unidade}</span>
+                        <span style="display: block; font-size: 0.85rem; color: var(--text-light);">Local: <strong>${item.localizacao}</strong> • Status: <strong>${item.status}</strong></span>
                     </div>
                     <div style="display:flex; gap:0.5rem;">
                         <button type="button" class="btn-icon" onclick="editStagingItem(${index})" title="Editar" style="background:var(--input-bg); border:1px solid var(--border);">✎</button>
@@ -774,7 +776,6 @@
             } catch (e) { alert("Erro: " + e.message); }
         }
 
-        // CORREÇÃO DO ALINHAMENTO DO TEXTO NA LISTA DE EXCLUSÃO
         window.renderDeleteList = function() {
             const term = document.getElementById('deleteSearch').value.toLowerCase();
             const container = document.getElementById('deleteListArea');
