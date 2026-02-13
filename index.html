@@ -230,7 +230,7 @@
         .btn-mini:hover { background: #e0f2fe; color: var(--primary); } 
         .btn-mini.danger:hover { background: #fee2e2; color: var(--danger); }
 
-        /* --- PRINT --- */
+        /* --- PRINT (CORRIGIDO) --- */
         @media print {
             body { background: white; padding: 0; margin: 0; color: black; -webkit-print-color-adjust: exact; }
             .header { box-shadow: none; margin: 0; padding: 10px 0; border-radius: 0; background: none; }
@@ -240,9 +240,11 @@
             .logo-text { width: 100%; text-align: center; }
             .logo-text h1 { font-size: 14pt !important; white-space: nowrap; color: black !important; margin: 0 !important; display: block; font-weight: bold; text-align: center; }
             .logo-text p { display: none; } 
-            .search-section, .btn-primary, .btn-secondary, .btn-icon, .action-buttons, .modal, .top-actions, .auth-container, #statusMsg, #policyAlert { display: none !important; }
+            
+            /* Esconde menus, botões, modais e as COLUNAS DE AÇÃO especificamente */
+            .search-section, .btn-primary, .btn-secondary, .btn-icon, .action-buttons, .modal, .top-actions, .auth-container, #statusMsg, #policyAlert, .admin-only, .action-td { display: none !important; }
+            
             .table-wrapper { border: 1px solid #000; box-shadow: none; border-radius: 0; margin-top: 15px; }
-            th:last-child, td:last-child { display: none; } 
             table { width: 100%; min-width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid #999; padding: 6px 8px; font-size: 9pt; color: black; }
             thead { display: table-header-group; background: #ddd !important; }
@@ -500,11 +502,19 @@
             units: ["mL", "L", "g", "kg", "Unid", "Caixa", "Frasco"]
         };
 
-        window.addEventListener('load', () => {
-            const saved = localStorage.getItem('labConfig');
-            if(saved) configData = JSON.parse(saved);
-            populateAllSelects();
-        });
+        // TRAVA DE SEGURANÇA: Lê o LocalStorage e MESCLA com os padrões para evitar erros (Issue 1 e 2)
+        const savedConfig = localStorage.getItem('labConfig');
+        if(savedConfig) {
+            try {
+                const parsed = JSON.parse(savedConfig);
+                configData.types = parsed.types || configData.types;
+                configData.locations = parsed.locations || configData.locations;
+                configData.units = parsed.units || configData.units; // Garante que units nunca seja undefined
+            } catch(e) { console.error("Erro ao ler configurações:", e); }
+        }
+        
+        // POPULA IMEDIATAMENTE os filtros ao abrir a página (resolve o Filtro Vazio)
+        populateAllSelects();
 
         function saveConfig() {
             localStorage.setItem('labConfig', JSON.stringify(configData));
@@ -514,7 +524,7 @@
         function populateAllSelects() {
             const fill = (id, arr) => {
                 const el = document.getElementById(id);
-                if(!el) return;
+                if(!el || !arr) return;
                 const currentVal = el.value;
                 el.innerHTML = arr.map(op => `<option value="${op}">${op}</option>`).join('');
                 if(arr.includes(currentVal)) el.value = currentVal;
@@ -523,8 +533,9 @@
             fill('local', configData.locations);
             fill('unidade', configData.units);
             
+            // Preenche o Filtro Principal
             const f = document.getElementById('filterType');
-            if(f) {
+            if(f && configData.types) {
                 const currFilter = f.value;
                 f.innerHTML = '<option value="Todos">Todos os Tipos</option>' + configData.types.map(t => `<option value="${t}">${t}</option>`).join('');
                 f.value = currFilter || 'Todos';
@@ -643,8 +654,9 @@
                 if((item.status||'').includes('Alto')) badgeClass = 'badge-alto';
                 if((item.status||'').includes('Crít')) badgeClass = 'badge-low';
 
+                // Usamos "action-td" para que a impressão possa esconder corretamente.
                 const actionCell = isAdmin ? `
-                    <td>
+                    <td class="action-td">
                         <div class="action-buttons">
                             <button class="btn-icon" onclick="window.editDirect('${item.id}')" title="Editar Rápido">✎</button>
                             <button class="btn-icon delete" onclick="window.deleteDirect('${item.id}')" title="Excluir">✕</button>
@@ -781,38 +793,24 @@
         }
 
         function openItemFormGeneric(item = null) {
-            try {
-                document.getElementById('itemForm').reset();
-                const title = document.getElementById('modalTitle');
-                
-                if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
-                else title.innerText = "Editar Item";
-                
-                // INJEÇÃO AUTOMÁTICA DE OPÇÕES (Evita quebrar o menu se editar item antigo com texto livre)
-                if (item) {
-                    let changed = false;
-                    if (item.unidade && !configData.units.includes(item.unidade)) { configData.units.push(item.unidade); changed = true; }
-                    if (item.tipo && !configData.types.includes(item.tipo)) { configData.types.push(item.tipo); changed = true; }
-                    if (item.localizacao && !configData.locations.includes(item.localizacao)) { configData.locations.push(item.localizacao); changed = true; }
-                    if (changed) saveConfig();
-                }
+            document.getElementById('itemForm').reset();
+            const title = document.getElementById('modalTitle');
+            
+            if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
+            else title.innerText = "Editar Item";
+            
+            // Renderiza as opções SEMPRE antes de injetar os valores
+            populateAllSelects();
 
-                // Renderiza as opções sempre antes de injetar os valores
-                populateAllSelects();
-
-                if (item) {
-                    document.getElementById('nome').value = item.nome || '';
-                    document.getElementById('tipo').value = item.tipo || '';
-                    document.getElementById('qtd').value = item.quantidade || '';
-                    document.getElementById('unidade').value = item.unidade || '';
-                    document.getElementById('local').value = item.localizacao || '';
-                    document.getElementById('status').value = item.status || 'Satisfatório';
-                }
-                document.getElementById('itemModal').classList.add('active');
-            } catch (err) {
-                console.error("Erro no formulário:", err);
-                alert("Erro ao abrir formulário. Tente recarregar a página.");
+            if (item) {
+                document.getElementById('nome').value = item.nome || '';
+                document.getElementById('tipo').value = item.tipo || '';
+                document.getElementById('qtd').value = item.quantidade || '';
+                document.getElementById('unidade').value = item.unidade || '';
+                document.getElementById('local').value = item.localizacao || '';
+                document.getElementById('status').value = item.status || 'Satisfatório';
             }
+            document.getElementById('itemModal').classList.add('active');
         }
 
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
@@ -842,13 +840,13 @@
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.loginGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
         
-        // --- LOGOUT (Força bruta: some botões imediatamente antes do reload) ---
+        // --- LOGOUT (Força bruta atualizada) ---
         window.logout = async () => {
-            userRole = 'visitor'; // Força visualização de visitante
-            updateInterface();    // Esconde botões protegidos instantaneamente
+            userRole = 'visitor'; 
+            updateInterface();    
             document.getElementById('authContainer').innerHTML = '<span style="color:var(--text-light); font-size:0.8rem;">Saindo...</span>';
-            await signOut(auth);  // Desconecta do Firebase
-            window.location.reload(); // Recarrega para limpar completamente
+            await signOut(auth);  
+            window.location.reload(); 
         };
 
         window.openAdmin = async () => {
