@@ -424,8 +424,7 @@
                     <div class="form-col" style="flex:1;">
                         <label style="font-size:0.8rem; font-weight:700;">Unidade</label>
                         <div class="dynamic-control-group">
-                            <select id="unidade" class="form-input">
-                                </select>
+                            <select id="unidade" class="form-input"></select>
                             <div class="tools-wrapper">
                                 <button type="button" class="btn-mini" onclick="manageOption('unit', 'add')" title="Adicionar">+</button>
                                 <button type="button" class="btn-mini" onclick="manageOption('unit', 'edit')" title="Editar">✎</button>
@@ -501,7 +500,6 @@
             units: ["mL", "L", "g", "kg", "Unid", "Caixa", "Frasco"]
         };
 
-        // Carregar configurações locais
         window.addEventListener('load', () => {
             const saved = localStorage.getItem('labConfig');
             if(saved) configData = JSON.parse(saved);
@@ -525,17 +523,16 @@
             fill('local', configData.locations);
             fill('unidade', configData.units);
             
-            // Filtro header
             const f = document.getElementById('filterType');
-            const currFilter = f.value;
-            f.innerHTML = '<option value="Todos">Todos os Tipos</option>' + configData.types.map(t => `<option value="${t}">${t}</option>`).join('');
-            f.value = currFilter;
+            if(f) {
+                const currFilter = f.value;
+                f.innerHTML = '<option value="Todos">Todos os Tipos</option>' + configData.types.map(t => `<option value="${t}">${t}</option>`).join('');
+                f.value = currFilter || 'Todos';
+            }
         }
 
         window.manageOption = function(category, action) {
-            let arr;
-            let elId;
-            
+            let arr; let elId;
             if(category === 'type') { arr = configData.types; elId = 'tipo'; }
             else if(category === 'loc') { arr = configData.locations; elId = 'local'; }
             else { arr = configData.units; elId = 'unidade'; }
@@ -543,12 +540,8 @@
             const el = document.getElementById(elId);
 
             if(action === 'add') {
-                const val = prompt("Novo item:");
-                if(val && val.trim()) {
-                    arr.push(val.trim());
-                    saveConfig();
-                    el.value = val.trim();
-                }
+                const val = prompt("Nova opção:");
+                if(val && val.trim()) { arr.push(val.trim()); saveConfig(); el.value = val.trim(); }
             } else if(action === 'edit') {
                 if(!el.value) return;
                 const val = prompt("Editar:", el.value);
@@ -707,7 +700,7 @@
         function renderStagingList() {
             const container = document.getElementById('stagingArea');
             if (pendingItems.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 2rem;">Lista vazia.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-light); padding: 2rem;">A lista de adição está vazia.</div>`;
                 return;
             }
             container.innerHTML = pendingItems.map((item, index) => `
@@ -788,24 +781,38 @@
         }
 
         function openItemFormGeneric(item = null) {
-            document.getElementById('itemForm').reset();
-            const title = document.getElementById('modalTitle');
-            
-            if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
-            else title.innerText = "Editar Item";
-            
-            // Garantir que os selects tenham valores (caso estejam vazios)
-            populateAllSelects();
+            try {
+                document.getElementById('itemForm').reset();
+                const title = document.getElementById('modalTitle');
+                
+                if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
+                else title.innerText = "Editar Item";
+                
+                // INJEÇÃO AUTOMÁTICA DE OPÇÕES (Evita quebrar o menu se editar item antigo com texto livre)
+                if (item) {
+                    let changed = false;
+                    if (item.unidade && !configData.units.includes(item.unidade)) { configData.units.push(item.unidade); changed = true; }
+                    if (item.tipo && !configData.types.includes(item.tipo)) { configData.types.push(item.tipo); changed = true; }
+                    if (item.localizacao && !configData.locations.includes(item.localizacao)) { configData.locations.push(item.localizacao); changed = true; }
+                    if (changed) saveConfig();
+                }
 
-            if (item) {
-                document.getElementById('nome').value = item.nome;
-                document.getElementById('tipo').value = item.tipo;
-                document.getElementById('qtd').value = item.quantidade;
-                document.getElementById('unidade').value = item.unidade;
-                document.getElementById('local').value = item.localizacao;
-                document.getElementById('status').value = item.status;
+                // Renderiza as opções sempre antes de injetar os valores
+                populateAllSelects();
+
+                if (item) {
+                    document.getElementById('nome').value = item.nome || '';
+                    document.getElementById('tipo').value = item.tipo || '';
+                    document.getElementById('qtd').value = item.quantidade || '';
+                    document.getElementById('unidade').value = item.unidade || '';
+                    document.getElementById('local').value = item.localizacao || '';
+                    document.getElementById('status').value = item.status || 'Satisfatório';
+                }
+                document.getElementById('itemModal').classList.add('active');
+            } catch (err) {
+                console.error("Erro no formulário:", err);
+                alert("Erro ao abrir formulário. Tente recarregar a página.");
             }
-            document.getElementById('itemModal').classList.add('active');
         }
 
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
@@ -835,15 +842,13 @@
         window.closeModal = (id) => document.getElementById(id).classList.remove('active');
         window.loginGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
         
-        // LOGOUT FORÇA BRUTA
+        // --- LOGOUT (Força bruta: some botões imediatamente antes do reload) ---
         window.logout = async () => {
-            // Limpeza imediata da UI
-            userRole = 'visitor';
-            updateInterface();
-            document.getElementById('authContainer').innerHTML = 'Saindo...';
-            // Logout real
-            await signOut(auth);
-            window.location.reload(); // Recarrega para limpar estado
+            userRole = 'visitor'; // Força visualização de visitante
+            updateInterface();    // Esconde botões protegidos instantaneamente
+            document.getElementById('authContainer').innerHTML = '<span style="color:var(--text-light); font-size:0.8rem;">Saindo...</span>';
+            await signOut(auth);  // Desconecta do Firebase
+            window.location.reload(); // Recarrega para limpar completamente
         };
 
         window.openAdmin = async () => {
