@@ -196,8 +196,6 @@
         .modal.active { display: flex; }
         .modal-content { background: var(--surface); padding: 2rem; border-radius: var(--radius-lg); width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .modal-lg { max-width: 800px; }
-        
-        /* AUMENTADO DE 500px para 650px para dar espaço aos menus de seleção e botões */
         .modal-md { max-width: 650px; } 
 
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
@@ -288,7 +286,7 @@
                     </p>
                 </div>
             </div>
-            <button onclick="document.getElementById('policyAlert').style.display='none'" 
+            <button type="button" onclick="document.getElementById('policyAlert').style.display='none'" 
                     style="background:none; border:none; cursor:pointer; font-size:1.2rem; opacity:0.6;" title="Fechar aviso">✕</button>
         </div>
 
@@ -382,7 +380,8 @@
     </div>
 
     <div id="itemModal" class="modal" style="z-index: 1100;">
-        <div class="modal-content modal-md"> <div class="modal-header">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
                 <h3 id="modalTitle">Dados do Item</h3>
                 <button type="button" onclick="closeModal('itemModal')" style="border:none;background:none;font-size:1.5rem;cursor:pointer;">&times;</button>
             </div>
@@ -392,28 +391,26 @@
                     <input type="text" id="nome" class="form-input" required>
                 </div>
                 
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
-                    <div class="form-col">
-                        <label style="font-size:0.8rem; font-weight:700;">Tipo</label>
-                        <div class="dynamic-control-group">
-                            <select id="tipo" class="form-input"></select>
-                            <div class="tools-wrapper">
-                                <button type="button" class="btn-mini" onclick="manageOption('type', 'add')" title="Adicionar">+</button>
-                                <button type="button" class="btn-mini" onclick="manageOption('type', 'edit')" title="Editar">✎</button>
-                                <button type="button" class="btn-mini danger" onclick="manageOption('type', 'remove')" title="Remover">✕</button>
-                            </div>
+                <div class="form-col">
+                    <label style="font-size:0.8rem; font-weight:700;">Tipo</label>
+                    <div class="dynamic-control-group">
+                        <select id="tipo" class="form-input"></select>
+                        <div class="tools-wrapper">
+                            <button type="button" class="btn-mini" onclick="manageOption('type', 'add')" title="Adicionar">+</button>
+                            <button type="button" class="btn-mini" onclick="manageOption('type', 'edit')" title="Editar">✎</button>
+                            <button type="button" class="btn-mini danger" onclick="manageOption('type', 'remove')" title="Remover">✕</button>
                         </div>
                     </div>
-                    
-                    <div class="form-col">
-                        <label style="font-size:0.8rem; font-weight:700;">Localização</label>
-                        <div class="dynamic-control-group">
-                            <select id="local" class="form-input"></select>
-                            <div class="tools-wrapper">
-                                <button type="button" class="btn-mini" onclick="manageOption('loc', 'add')" title="Adicionar">+</button>
-                                <button type="button" class="btn-mini" onclick="manageOption('loc', 'edit')" title="Editar">✎</button>
-                                <button type="button" class="btn-mini danger" onclick="manageOption('loc', 'remove')" title="Remover">✕</button>
-                            </div>
+                </div>
+                
+                <div class="form-col">
+                    <label style="font-size:0.8rem; font-weight:700;">Localização</label>
+                    <div class="dynamic-control-group">
+                        <select id="local" class="form-input"></select>
+                        <div class="tools-wrapper">
+                            <button type="button" class="btn-mini" onclick="manageOption('loc', 'add')" title="Adicionar">+</button>
+                            <button type="button" class="btn-mini" onclick="manageOption('loc', 'edit')" title="Editar">✎</button>
+                            <button type="button" class="btn-mini danger" onclick="manageOption('loc', 'remove')" title="Remover">✕</button>
                         </div>
                     </div>
                 </div>
@@ -503,7 +500,6 @@
             units: ["mL", "L", "g", "kg", "Unid", "Caixa", "Frasco"]
         };
 
-        // Carrega as configurações globais salvos no Firestore (para todos verem os mesmos itens)
         async function loadConfigFromFirebase() {
             try {
                 const docRef = doc(db, "inventario", "--CONFIGURACOES--");
@@ -514,7 +510,6 @@
                     configData.locations = data.locations || configData.locations;
                     configData.units = data.units || configData.units;
                 } else {
-                    // Se não existe, cria a primeira vez com o padrão
                     await setDoc(docRef, { ...configData, nome: "___CONFIG___" });
                 }
                 populateAllSelects();
@@ -526,7 +521,6 @@
 
         async function saveConfig() {
             try {
-                // Salva no Firestore para que todos os admins vejam a mesma lista
                 await setDoc(doc(db, "inventario", "--CONFIGURACOES--"), {
                     nome: "___CONFIG___",
                     types: configData.types,
@@ -536,7 +530,7 @@
                 populateAllSelects();
             } catch(e) {
                 console.error(e);
-                alert("Erro ao sincronizar. Você tem permissão de Admin?");
+                alert("Erro ao sincronizar opções. Você tem permissão de Admin?");
             }
         }
 
@@ -611,7 +605,7 @@
                     }
                 } catch(e) { console.error(e); userRole = 'visitor'; }
 
-                const adminBtn = userRole === 'super_admin' ? `<button class="btn-config" onclick="openAdmin()">⚙</button>` : '';
+                const adminBtn = userRole === 'super_admin' ? `<button type="button" class="btn-config" onclick="openAdmin()">⚙</button>` : '';
                 container.innerHTML = `
                     <div class="user-chip">
                         <img src="${user.photoURL}" class="avatar">
@@ -620,12 +614,12 @@
                             <span class="u-role">Status: ${userRole}</span>
                         </div>
                         ${adminBtn}
-                        <button class="btn-logout" onclick="logout()">Sair</button>
+                        <button type="button" class="btn-logout" onclick="logout()">Sair</button>
                     </div>`;
             } else {
                 userRole = 'visitor';
                 container.innerHTML = `
-                    <button class="btn-google" onclick="loginGoogle()">
+                    <button type="button" class="btn-google" onclick="loginGoogle()">
                         <svg class="google-icon" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path></svg>
                         Entrar com Google
                     </button>`;
@@ -652,7 +646,6 @@
                 const snap = await getDocs(q);
                 inventory = [];
                 snap.forEach(d => {
-                    // Importante: Ignora o documento de configurações para ele não ir para a tabela
                     if(d.id !== '--CONFIGURACOES--') {
                         inventory.push({ id: d.id, ...d.data() });
                     }
@@ -687,8 +680,8 @@
                 const actionCell = isAdmin ? `
                     <td class="action-td">
                         <div class="action-buttons">
-                            <button class="btn-icon" onclick="window.editDirect('${item.id}')" title="Editar Rápido">✎</button>
-                            <button class="btn-icon delete" onclick="window.deleteDirect('${item.id}')" title="Excluir">✕</button>
+                            <button type="button" class="btn-icon" onclick="window.editDirect('${item.id}')" title="Editar Rápido">✎</button>
+                            <button type="button" class="btn-icon delete" onclick="window.deleteDirect('${item.id}')" title="Excluir">✕</button>
                         </div>
                     </td>` : ``;
 
@@ -728,7 +721,6 @@
             openItemFormGeneric();
         }
 
-        // NOVIDADE: Abre para edição o item que já está na lista prévia
         window.editStagingItem = function(index) {
             currentMode = 'staging_edit';
             editingIndexOrId = index;
@@ -782,15 +774,16 @@
             } catch (e) { alert("Erro: " + e.message); }
         }
 
+        // CORREÇÃO DO ALINHAMENTO DO TEXTO NA LISTA DE EXCLUSÃO
         window.renderDeleteList = function() {
             const term = document.getElementById('deleteSearch').value.toLowerCase();
             const container = document.getElementById('deleteListArea');
             const filtered = inventory.filter(i => i.nome.toLowerCase().includes(term));
 
             container.innerHTML = filtered.map(item => `
-                <label class="staging-item" style="cursor:pointer; display:flex;">
-                    <input type="checkbox" value="${item.id}" name="deleteItem" style="margin-right:10px;">
-                    <div class="staging-info">
+                <label class="staging-item" style="cursor:pointer; display:flex; justify-content:flex-start; align-items:center;">
+                    <input type="checkbox" value="${item.id}" name="deleteItem" style="margin-right:15px; width:18px; height:18px;">
+                    <div class="staging-info" style="text-align: left; flex: 1;">
                         <h4>${item.nome}</h4>
                         <span>${item.localizacao}</span>
                     </div>
@@ -839,7 +832,7 @@
                 if(currentMode === 'staging_new') title.innerText = "Adicionar à Lista";
                 else title.innerText = "Editar Item";
                 
-                // INJEÇÃO AUTOMÁTICA (Trava de segurança mesclando configurações)
+                // INJEÇÃO AUTOMÁTICA
                 if (item) {
                     let changed = false;
                     if (item.unidade && !configData.units.includes(item.unidade)) { configData.units.push(item.unidade); changed = true; }
@@ -875,7 +868,6 @@
                 status: document.getElementById('status').value,
             };
 
-            // NOVIDADE: Permite salvar alteração de item na lista prévia
             if (currentMode === 'staging_new') {
                 pendingItems.push(newItem);
                 renderStagingList();
